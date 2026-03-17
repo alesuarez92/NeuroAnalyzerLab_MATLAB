@@ -1,0 +1,524 @@
+%% ExtractEphysApp.m
+% =========================================================================
+% EXTRACT EPHYS DATA - LOAD TDT TANK, EXTRACT LFP AND MUA STREAMS
+% =========================================================================
+% Launched from Main. Loads TDT tank folder via TDTbin2mat, user selects
+% stimulus (Whis) channel and raw (xRAW) channels. Can plot raw, then
+% Process LFP (filter and downsample for LFP) or Process MUA (filter for
+% multi-unit activity). Save LFP Data / Save MUA Data write .mat for
+% LFPAnalysisApp and MUAAnalysisApp. Uses LFPProcessingParamsApp and
+% MUAProcessingParamsApp for filter parameters.
+% =========================================================================
+
+classdef ExtractEphysApp < handle
+    %% PROPERTIES: UI, TDT data struct, selected channels, last processed LFP/MUA and params
+    properties
+        UIFig
+        LoadBtn
+        RAWList
+        PlotRAWBtn
+        ProcessLFPBtn
+        AxContainer
+        WhisChannelMenu
+        StatusLabel
+        LastProcessedLFP
+        LastLFPfs
+        LastMUAFilterParams
+        LastProcessedMUA
+        LastMUAfs
+        FsLabel  % Label to show current sampling rate
+
+        Data  % Struct loaded from TDTbin2mat
+        StimChannel  % Selected Whis channel
+        RAWChannels  % Selected xRAW channels
+    end
+
+    methods
+        %% Constructor - Build UI; data loaded via Load TDT Folder
+        function app = ExtractEphysApp()
+            app.buildUI();
+        end
+
+        %% buildUI - Toolbar, channel/process controls, axes panel, defined footer
+        function buildUI(app)
+            T = UITheme;
+            app.UIFig = figure('Name', 'Extract Ephys Data', ...
+                'Position', [100 100 1000 820], 'Resize', 'on', ...
+                'Color', T.bgGray);
+
+            % --- Footer panel (defined, no overlap) ---
+            footerPanel = uipanel(app.UIFig, 'Units', 'normalized', 'Position', [0 0 1 0.05], ...
+                'BorderType', 'none', 'BackgroundColor', T.bgGray);
+            uicontrol(footerPanel, 'Style', 'pushbutton', 'String', '© Copyrights by Alejandro Suarez, Ph.D.', ...
+                'Units', 'normalized', 'Position', [0.45 0.1 0.54 0.8], ...
+                'HorizontalAlignment', 'right', 'FontSize', 9, 'ForegroundColor', [0.1 0.4 0.7], ...
+                'BackgroundColor', T.bgGray, 'Callback', @(~,~)web('https://github.com/alesuarez92', '-browser'));
+
+            % --- Top row: Load, status, stim channel ---
+            app.LoadBtn = uicontrol(app.UIFig, 'Style','pushbutton', ...
+                'String','Load TDT Folder', 'Units', 'normalized', ...
+                'Position', [0.02 0.90 0.15 0.05], ...
+                'Callback', @(~,~)app.loadTDT());
+            app.StatusLabel = uicontrol(app.UIFig, 'Style','text', 'String','', ...
+                'Units', 'normalized', 'Position', [0.02 0.855 0.32 0.03], ...
+                'FontSize', 12, 'HorizontalAlignment','left', 'ForegroundColor','green');
+            uicontrol(app.UIFig, 'Style','text', 'String','Select Stim Channel:', ...
+                'Units', 'normalized', 'Position', [0.20 0.90 0.14 0.03], 'FontSize', 11, 'HorizontalAlignment','left');
+            app.WhisChannelMenu = uicontrol(app.UIFig, 'Style','popupmenu', ...
+                'String', {'1','2','3','4','5','6','7','8'}, ...
+                'Units', 'normalized', 'Position', [0.35 0.90 0.06 0.04]);
+
+            % --- Left: Channels list, Plot RAW ---
+            uicontrol(app.UIFig, 'Style','text', 'String','Channels:', ...
+                'Units', 'normalized', 'Position', [0.20 0.82 0.10 0.025]);
+            app.RAWList = uicontrol(app.UIFig, 'Style','listbox', ...
+                'Units', 'normalized', 'Position', [0.20 0.58 0.10 0.22], ...
+                'Max', 16, 'Min', 1, 'String', {'1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16'});
+            app.PlotRAWBtn = uicontrol(app.UIFig, 'Style','pushbutton', ...
+                'String','Plot RAW', 'Units', 'normalized', 'Position', [0.06 0.82 0.10 0.04], ...
+                'Callback', @(~,~)app.plotRAWData());
+
+            % --- LFP / MUA buttons (grouped, spaced) ---
+            app.ProcessLFPBtn = uicontrol(app.UIFig, 'Style','pushbutton', ...
+                'String','Process LFP', 'Units', 'normalized', 'Position', [0.42 0.90 0.12 0.04], ...
+                'Callback', @(~,~)app.processLFPData());
+            uicontrol(app.UIFig, 'Style','pushbutton', 'String','Save LFP Data', ...
+                'Units', 'normalized', 'Position', [0.42 0.84 0.12 0.04], ...
+                'Callback', @(~,~)app.saveLFPData(app.LastProcessedLFP, app.LastLFPfs));
+            uicontrol(app.UIFig, 'Style','pushbutton', 'String','Process MUA', ...
+                'Units', 'normalized', 'Position', [0.56 0.90 0.12 0.04], ...
+                'Callback', @(~,~)app.processMUAData());
+            uicontrol(app.UIFig, 'Style','pushbutton', 'String','Save MUA Data', ...
+                'Units', 'normalized', 'Position', [0.56 0.84 0.12 0.04], ...
+                'Callback', @(~,~)app.saveMUAData(app.LastProcessedMUA, app.LastMUAfs, app.LastMUAFilterParams));
+
+            app.FsLabel = uicontrol(app.UIFig, 'Style','text', 'String','Fs: N/A', ...
+                'Units', 'normalized', 'Position', [0.82 0.82 0.12 0.03], ...
+                'HorizontalAlignment','left', 'FontWeight','bold');
+
+            % --- Axes panel (above footer) ---
+            app.AxContainer = uipanel(app.UIFig, 'Title','Raw Data', ...
+                'Units', 'normalized', 'Position', [0.01 0.06 0.98 0.72]);
+        end
+%% ------------------------------------------------------------------------------------------
+        function loadTDT(app)
+            folder = uigetdir('', 'Select TDT Tank Folder');
+            if folder == 0
+                app.StatusLabel.String = 'Load canceled.';
+                app.StatusLabel.ForegroundColor = 'red';
+                return;
+            end
+        
+            % Show loading message
+            app.StatusLabel.String = 'Loading data... please wait';
+            app.StatusLabel.ForegroundColor = 'blue';
+            drawnow;  % Force UI update
+        
+            try
+                addpath(genpath(fullfile(pwd, 'Utilities', 'TDTMatlabSDK')));
+                app.Data = TDTbin2mat(folder);
+        
+                app.StatusLabel.String = 'TDT data loaded successfully.';
+                app.StatusLabel.ForegroundColor = 'green';
+            catch ME
+                app.StatusLabel.String = sprintf('Error loading data: %s', ME.message);
+                app.StatusLabel.ForegroundColor = 'red';
+            end
+        
+        end
+
+%% ------------------------------------------------------------------------------------------
+        function plotRAWData(app)
+            if isempty(app.Data)
+                errordlg('No data loaded.');
+                return;
+            end
+        
+            app.StimChannel = app.WhisChannelMenu.Value;
+            app.RAWChannels = app.RAWList.Value;
+        
+            stim = app.Data.streams.Whis.data(app.StimChannel, :);
+            stim_fs = app.Data.streams.Whis.fs;
+            t_stim = (0:length(stim)-1)/stim_fs;
+        
+            raw = double(app.Data.streams.xRAW.data(app.RAWChannels, :));
+            raw_fs = app.Data.streams.xRAW.fs;
+            app.FsLabel.String = sprintf('Fs: %.1f Hz', raw_fs);
+            t_raw = (0:size(raw,2)-1)/raw_fs;
+
+            % Case 1: 4 or fewer channels -> plot in AxContainer
+            if length(app.RAWChannels) <= 4
+                delete(findall(app.AxContainer, 'Type', 'tiledlayout'));  % Clear old layout
+        
+                ax = tiledlayout(app.AxContainer, length(app.RAWChannels)+1, 1, ...
+                    'TileSpacing','compact', 'Padding','compact');
+        
+                % Plot stimulus
+                nexttile(ax)
+                plot(t_stim, stim);
+                ylabel(sprintf('Whis Ch %d', app.StimChannel));
+                title('Stimulation Signal');
+        
+                % Plot RAW channels
+                for i = 1:length(app.RAWChannels)
+                    nexttile(ax)
+                    plot(t_raw, raw(i,:));
+                    ylabel(sprintf('RAW Ch %d', app.RAWChannels(i)));
+                    if i == length(app.RAWChannels)
+                        xlabel('Time (s)');
+                    else
+                        set(gca, 'XTickLabel', []);
+                    end
+                end
+        
+            % Case 2: > 4 channels -> create multiple windows
+            else
+                ch = app.RAWChannels;
+                nGroups = ceil(length(ch)/4);
+                for g = 1:nGroups
+                    chIdx = ch((g-1)*4 + 1 : min(g*4, length(ch)));
+                    rawGroup = double(app.Data.streams.xRAW.data(chIdx, :));
+        
+                    fig = figure('Name', sprintf('Group %d: RAW Channels', g), ...
+                                 'Position', [200+100*g, 200-50*g, 1000, 700]);
+        
+                    ax = tiledlayout(fig, length(chIdx)+1, 1, ...
+                        'TileSpacing','compact', 'Padding','compact');
+        
+                    % Plot stimulus
+                    nexttile(ax)
+                    plot(t_stim, stim);
+                    ylabel(sprintf('Whis Ch %d', app.StimChannel));
+                    title('Stimulation Signal');
+        
+                    % Plot group of 4 RAW channels
+                    for i = 1:length(chIdx)
+                        nexttile(ax)
+                        plot(t_raw, rawGroup(i,:));
+                        ylabel(sprintf('RAW Ch %d', chIdx(i)));
+                        if i == length(chIdx)
+                            xlabel('Time (s)');
+                        else
+                            set(gca, 'XTickLabel', []);
+                        end
+                    end
+                end
+            end
+        end
+
+%% ------------------------------------------------------------------------------------------
+        function processLFPData(app)
+            if isempty(app.Data)
+                errordlg('No data loaded.');
+                return;
+            end
+            % Ensure channels are updated from UI
+            app.StimChannel = app.WhisChannelMenu.Value;
+            app.RAWChannels = app.RAWList.Value;
+        
+            % Launch parameter window
+            paramsApp = LFPProcessingParamsApp();
+            uiwait(paramsApp.UIFig);  % Wait for user input
+        
+            params = paramsApp.Params;
+            if isempty(params)
+                return;  % User cancelled
+            end
+        
+            % Extract selected channels
+            stim = app.Data.streams.Whis.data(app.StimChannel, :);
+            stim_fs = app.Data.streams.Whis.fs;
+            t_stim = (0:length(stim)-1)/stim_fs;
+        
+            raw = double(app.Data.streams.xRAW.data(app.RAWChannels,:));
+            raw_fs = app.Data.streams.xRAW.fs;
+        
+            % Preallocate
+            processed = cell(1, length(app.RAWChannels));
+            fs = raw_fs;
+        
+            % === 1. Anti-aliasing + Downsample if requested ===
+            if params.downsample
+                target_fs = params.downsampleRate;
+                aa_cutoff = 0.8 * target_fs / 2;  % anti-alias cutoff
+        
+                [b_aa, a_aa] = butter(4, aa_cutoff / (fs / 2), 'low');
+                for i = 1:length(app.RAWChannels)
+                    filtered = filtfilt(b_aa, a_aa, raw(i,:));
+                    processed{i} = downsample(filtered, round(fs / target_fs));
+                end
+                fs = target_fs;  % update sampling rate
+                % Update UI
+            else
+                for i = 1:length(app.RAWChannels)
+                    processed{i} = raw(i,:);
+                end
+            end
+            app.FsLabel.String = sprintf('Raw Fs: %.1f Hz  LFP Fs: %.1f Hz', raw_fs, fs);
+        
+            % === 2. Apply lowpass filter ===
+            if ~isnan(params.lowCutoff) && params.lowCutoff > 0 && params.lowCutoff < fs/2
+                [b_lp, a_lp] = butter(4, params.lowCutoff / (fs/2), 'low');
+                for i = 1:length(processed)
+                    processed{i} = filtfilt(b_lp, a_lp, processed{i});
+                end
+            end
+        
+            % === 3. Apply 60 Hz Notch filter if requested ===
+            if params.notch60
+                wo = 60/(fs/2);
+                bw = wo/35;
+                [b_notch, a_notch] = iirnotch(wo, bw);
+                for i = 1:length(processed)
+                    processed{i} = filtfilt(b_notch, a_notch, processed{i});
+                end
+            end
+        
+            % === 4. Plot LFP data ===
+            ch = app.RAWChannels;
+            t = @(n) (0:length(processed{n})-1)/fs;
+        
+            if length(ch) <= 4
+                % Plot in app panel
+                delete(findall(app.AxContainer, 'Type', 'tiledlayout'));  % Clear panel
+        
+                ax = tiledlayout(app.AxContainer, length(ch)+1, 1, ...
+                    'TileSpacing','compact', 'Padding','compact');
+        
+                % Stim
+                nexttile(ax)
+                plot(t_stim, stim);
+                ylabel(sprintf('Whis Ch %d', app.StimChannel));
+                title('Stimulation Signal');
+        
+                for i = 1:length(ch)
+                    nexttile(ax)
+                    plot(t(i), processed{i});
+                    ylabel(sprintf('RAW Ch %d', ch(i)));
+                    if i == length(ch)
+                        xlabel('Time (s)');
+                    else
+                        set(gca, 'XTickLabel', []);
+                    end
+                end
+            else
+                % Plot in external figures in groups of 4
+                nGroups = ceil(length(ch)/4);
+                for g = 1:nGroups
+                    chIdx = ch((g-1)*4 + 1 : min(g*4, length(ch)));
+                    fig = figure('Name', sprintf('LFP Processed - Group %d', g), ...
+                                 'Position', [200+100*g, 200-50*g, 1000, 700]);
+                    ax = tiledlayout(fig, length(chIdx)+1, 1, ...
+                                     'TileSpacing','compact', 'Padding','compact');
+        
+                    % Stim
+                    nexttile(ax)
+                    plot(t_stim, stim);
+                    ylabel(sprintf('Whis Ch %d', app.StimChannel));
+                    title('Stimulation Signal');
+        
+                    for i = 1:length(chIdx)
+                        nexttile(ax)
+                        plot(t(i), processed{(g-1)*4 + i});
+                        ylabel(sprintf('RAW Ch %d', chIdx(i)));
+                        if i == length(chIdx)
+                            xlabel('Time (s)');
+                        else
+                            set(gca, 'XTickLabel', []);
+                        end
+                    end
+                end
+            end
+            app.LastProcessedLFP = processed;
+            app.LastLFPfs = fs;
+
+        end
+%% ------------------------------------------------------------------------------------------
+        function saveLFPData(app, processedLFP, fsLFP)
+            % processedLFP: cell array of processed data (1 x Nch)
+            % fsLFP: sampling rate after filtering/downsampling
+        
+            if isempty(processedLFP)
+                errordlg('No processed LFP data available.');
+                return;
+            end
+        
+            chLabels = arrayfun(@(c) sprintf('Ch %d', app.RAWChannels(c)), ...
+                                1:length(app.RAWChannels), 'UniformOutput', false);
+        
+            [selection, ok] = listdlg('PromptString','Select LFP channels to save:', ...
+                                      'SelectionMode','multiple', ...
+                                      'ListString', chLabels);
+        
+            if ~ok || isempty(selection)
+                return;  % User cancelled
+            end
+        
+            lfp_data = cell2mat(processedLFP(selection)');
+            lfp_channels = app.RAWChannels(selection);
+            lfp_fs = fsLFP;
+            t_lfp = (0:size(lfp_data,2)-1)/lfp_fs;
+
+            stim_data = app.Data.streams.Whis.data(app.StimChannel, :);
+            stim_fs = app.Data.streams.Whis.fs;
+            t_stim = (0:length(stim_data)-1)/stim_fs;
+        
+            % Save dialog
+            [file, path] = uiputfile('*.mat', 'Save LFP Data As');
+            if isequal(file, 0)
+                return;
+            end
+        
+            % Save .mat file
+            save(fullfile(path, file), ...
+                'lfp_data', 'lfp_channels', 'lfp_fs', 't_lfp', ...
+                'stim_data', 'stim_fs', 't_stim');
+        
+            msgbox('LFP data saved successfully.', 'Success');
+        end
+
+%% ------------------------------------------------------------------------------------------
+        function processMUAData(app)
+            if isempty(app.Data)
+                errordlg('No data loaded.');
+                return;
+            end
+        
+            app.StimChannel = app.WhisChannelMenu.Value;
+            app.RAWChannels = app.RAWList.Value;
+        
+            paramApp = MUAProcessingParamsApp();
+            uiwait(paramApp.UIFig);
+            params = paramApp.Params;
+            if isempty(params), return; end
+        
+            stim = app.Data.streams.Whis.data(app.StimChannel, :);
+            stim_fs = app.Data.streams.Whis.fs;
+            fs = app.Data.streams.xRAW.fs;
+        
+            Wn = [params.lowCutoff params.highCutoff] / (fs/2);
+            switch params.filterType
+                case 'Butterworth'
+                    [b, a] = butter(params.order, Wn, 'bandpass');
+                case 'Chebyshev I'
+                    Rp = 0.5;
+                    [b, a] = cheby1(params.order, Rp, Wn, 'bandpass');
+                otherwise
+                    errordlg('Unsupported filter type'); return;
+            end
+        
+            smooth_ms = params.smoothMs;
+            if params.autoSmooth
+                smooth_ms = 2;
+            end
+            window = max(1, round((smooth_ms / 1000) * fs));
+            kernel = ones(1, window) / window;
+        
+            processed = cell(1, length(app.RAWChannels));
+            rawAll = cell(1, length(app.RAWChannels));
+        
+            for i = 1:length(app.RAWChannels)
+                raw = double(app.Data.streams.xRAW.data(app.RAWChannels(i), :));
+                rawAll{i} = raw;
+                bandpassed = filtfilt(b, a, raw);
+                % ⛔ No rectification
+                smoothed = conv(bandpassed, kernel, 'same');
+                processed{i} = smoothed;
+            end
+        
+            t_stim = (0:length(stim)-1)/stim_fs;
+            t = @(n) (0:length(processed{n})-1)/fs;
+            ch = app.RAWChannels;
+        
+            if length(ch) <= 4
+                delete(findall(app.AxContainer, 'Type', 'tiledlayout'));
+                ax = tiledlayout(app.AxContainer, length(ch)+1, 1, ...
+                                 'TileSpacing','compact', 'Padding','compact');
+        
+                nexttile(ax);
+                plot(t_stim, stim);
+                ylabel(sprintf('Whis Ch %d', app.StimChannel));
+                title('Stimulation Signal');
+        
+                for i = 1:length(ch)
+                    nexttile(ax); hold on;
+                    if params.overlayRaw
+                        plot(t(i), rawAll{i}, 'Color', [0.6 0.6 0.6]);
+                    end
+                    plot(t(i), processed{i}, 'k', 'LineWidth', 1);
+                    ylabel(sprintf('MUA Ch %d', ch(i)));
+                    if i == length(ch), xlabel('Time (s)'); else, set(gca, 'XTickLabel', []); end
+                end
+            else
+                nGroups = ceil(length(ch)/4);
+                for g = 1:nGroups
+                    chIdx = ch((g-1)*4 + 1 : min(g*4, length(ch)));
+                    fig = figure('Name', sprintf('MUA Processed - Group %d', g), ...
+                                 'Position', [200+100*g, 200-50*g, 1000, 700]);
+                    ax = tiledlayout(fig, length(chIdx)+1, 1, ...
+                                     'TileSpacing','compact', 'Padding','compact');
+        
+                    nexttile(ax);
+                    plot(t_stim, stim);
+                    ylabel(sprintf('Whis Ch %d', app.StimChannel));
+                    title('Stimulation Signal');
+        
+                    for i = 1:length(chIdx)
+                        chInd = (g-1)*4 + i;
+                        nexttile(ax); hold on;
+                        if params.overlayRaw
+                            plot(t(chInd), rawAll{chInd}, 'Color', [0.6 0.6 0.6]);
+                        end
+                        plot(t(chInd), processed{chInd}, 'k', 'LineWidth', 1);
+                        ylabel(sprintf('MUA Ch %d', chIdx(i)));
+                        if i == length(chIdx), xlabel('Time (s)'); else, set(gca, 'XTickLabel', []); end
+                    end
+                end
+            end
+        
+            app.LastProcessedMUA = processed;
+            app.LastMUAfs = fs;
+            app.LastMUAFilterParams = params;
+        end
+        
+%% ------------------------------------------------------------------------------------------
+        function saveMUAData(app, processedMUA, fsMUA, filterParams)
+            if isempty(processedMUA)
+                errordlg('No processed MUA data available.');
+                return;
+            end
+        
+            chLabels = arrayfun(@(c) sprintf('Ch %d', app.RAWChannels(c)), ...
+                                1:length(app.RAWChannels), 'UniformOutput', false);
+        
+            [selection, ok] = listdlg('PromptString','Select MUA channels to save:', ...
+                                      'SelectionMode','multiple', ...
+                                      'ListString', chLabels);
+        
+            if ~ok || isempty(selection)
+                return;
+            end
+        
+            mua_data = cell2mat(processedMUA(selection)');
+            mua_channels = app.RAWChannels(selection);
+            mua_fs = fsMUA;
+            t_mua = (0:size(mua_data,2)-1)/mua_fs;
+            
+            stim_data = app.Data.streams.Whis.data(app.StimChannel, :);
+            stim_fs = app.Data.streams.Whis.fs;
+            t_stim = (0:length(stim_data)-1)/stim_fs;
+        
+            [file, path] = uiputfile('*.mat', 'Save MUA Data As');
+            if isequal(file, 0)
+                return;
+            end
+        
+            save(fullfile(path, file), ...
+            'mua_data', 'mua_channels', 'mua_fs', 't_mua', ...
+            'stim_data', 'stim_fs', 't_stim', 'filterParams');
+        
+            msgbox('MUA data and parameters saved successfully.', 'Success');
+        end
+
+    end
+end

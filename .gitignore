@@ -1,0 +1,26 @@
+# MATLAB
+*.asv
+*.m~
+*.autosave
+*.mat
+slprj/
+*.slxc
+*.slx.autosave
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE / editors
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+.cursor/
+
+# Optional: uncomment if you don't want to track large data or local config
+# *.nex
+# data/
+# local_config/
