@@ -49,6 +49,21 @@ rest of the toolbox instead of bolting on a one-off function.
 
 Please do not include AI-generated co-author trailers in commits.
 
+## Contribution licensing and attribution
+
+By submitting a contribution to this repository (issue, pull request, patch,
+or otherwise), you grant the project maintainer (Alejandro Suarez, Ph.D.) a
+perpetual, worldwide, royalty-free, non-exclusive license to use, modify,
+sublicense, and distribute your contribution under the terms of this
+project's [LICENSE](LICENSE.txt). You retain copyright on your changes;
+incorporating them into the project does not transfer ownership.
+
+In-file attribution — i.e. who is named in `LICENSE`, `README`, `CITATION.cff`,
+package metadata, and similar surfaces — remains at the maintainer's
+discretion. The maintainer may, but is not obligated to, add a contributor's
+name to those files. Standard `git log` author records on merged commits are
+not affected by this rule and are the canonical record of who wrote what.
+
 ## Versioning and releases
 
 The project follows [SemVer](https://semver.org/) (MAJOR.MINOR.PATCH).
