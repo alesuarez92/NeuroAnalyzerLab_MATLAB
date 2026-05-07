@@ -62,14 +62,15 @@ classdef ProcessingLDFApp < handle
                 'FontSize', T.fontSubtitle, 'ForegroundColor', T.headerSubtitleColor, ...
                 'BackgroundColor', T.headerBg, 'HorizontalAlignment', 'left');
 
-            % --- Fixed footer ---
+            % --- Fixed footer (plain hyperlink-style text, no button border) ---
             footerH = 0.06;
             footerPanel = uipanel(app.UIFig, 'Units', 'normalized', ...
                 'Position', [0 0 1 footerH], 'BorderType', 'none', 'BackgroundColor', T.bgGray);
-            uicontrol(footerPanel, 'Style', 'pushbutton', 'String', '© Copyrights by Alejandro Suarez, Ph.D.', ...
-                'Units', 'normalized', 'Position', [0.45 0.1 0.54 0.8], ...
-                'HorizontalAlignment', 'right', 'FontSize', T.fontSmall, 'ForegroundColor', [0.1 0.4 0.7], ...
-                'BackgroundColor', T.bgGray, 'Callback', @(~,~)web('https://github.com/alesuarez92', '-browser'));
+            uicontrol(footerPanel, 'Style', 'text', 'String', '© Copyrights by Alejandro Suarez, Ph.D.', ...
+                'Units', 'normalized', 'Position', [0.45 0.15 0.53 0.7], ...
+                'HorizontalAlignment', 'right', 'FontSize', T.fontSmall, 'ForegroundColor', T.mutedColor, ...
+                'BackgroundColor', T.bgGray, 'Enable', 'inactive', ...
+                'ButtonDownFcn', @(~,~)web('https://github.com/alesuarez92', '-browser'));
 
             % --- Fixed controls section (positioned just below the header) ---
             ctrlTop = 1 - headerH - 0.02;
@@ -124,8 +125,10 @@ classdef ProcessingLDFApp < handle
                 'Units', 'normalized', 'Position', [0.71 0.15 0.10 0.5], ...
                 'BackgroundColor','white', 'HorizontalAlignment','left');
 
-            % --- Axes (above footer, below controls); top margin per axis so titles not clipped ---
-            graphBottom = footerH + 0.02;
+            % --- Axes (above footer, below controls); leave room above the
+            % footer so the bottom-axis xlabel and tick labels never overlap
+            % the copyright. Also reserve a top margin per axis for the title. ---
+            graphBottom = footerH + 0.06;
             graphTop = ctrlTop - ctrlH - 0.04;
             graphH = graphTop - graphBottom;
             gap = 0.03;

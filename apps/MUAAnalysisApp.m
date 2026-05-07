@@ -71,14 +71,15 @@ classdef MUAAnalysisApp < handle
                 'FontSize', T.fontSubtitle, 'ForegroundColor', T.headerSubtitleColor, ...
                 'BackgroundColor', T.headerBg, 'HorizontalAlignment', 'left');
 
-            % === FIXED FOOTER (copyright only) ===
+            % === FIXED FOOTER (plain hyperlink-style text, no button border) ===
             footerH = 0.06;
             footerPanel = uipanel(app.UIFig, 'Units', 'normalized', ...
                 'Position', [0 0 1 footerH], 'BorderType', 'none', 'BackgroundColor', T.bgGray);
-            uicontrol(footerPanel, 'Style', 'pushbutton', 'String', '© Copyrights by Alejandro Suarez, Ph.D.', ...
-                'Units', 'normalized', 'Position', [0.45 0.1 0.54 0.8], ...
-                'HorizontalAlignment', 'right', 'FontSize', T.fontSmall, 'ForegroundColor', [0.1 0.4 0.7], ...
-                'BackgroundColor', T.bgGray, 'Callback', @(~,~)web('https://github.com/alesuarez92', '-browser'));
+            uicontrol(footerPanel, 'Style', 'text', 'String', '© Copyrights by Alejandro Suarez, Ph.D.', ...
+                'Units', 'normalized', 'Position', [0.45 0.15 0.53 0.7], ...
+                'HorizontalAlignment', 'right', 'FontSize', T.fontSmall, 'ForegroundColor', T.mutedColor, ...
+                'BackgroundColor', T.bgGray, 'Enable', 'inactive', ...
+                'ButtonDownFcn', @(~,~)web('https://github.com/alesuarez92', '-browser'));
 
             % === FIXED CONTROLS PANEL (below header) ===
             panelTop = 1 - headerH - 0.01;
@@ -149,8 +150,10 @@ classdef MUAAnalysisApp < handle
                 'Units', 'normalized', 'Position', [0.82 0.08 0.12 0.12], 'FontSize', T.fontSmall, ...
                 'Callback', @(~,~)clearClusterSelection(app));
 
-            % === GRAPHS SECTION: between footer and controls; margin so titles not clipped ===
-            graphBottom = footerH + 0.02;
+            % === GRAPHS SECTION: between footer and controls; extra bottom
+            % margin so the bottom-axis xlabel/tick labels never overlap the
+            % copyright footer, and a top margin so axis titles are not clipped ===
+            graphBottom = footerH + 0.04;
             graphTop = panelTop - panelH - 0.01;
             graphH = graphTop - graphBottom;
             axGap = 0.015;
