@@ -12,13 +12,17 @@ slprj/
 Thumbs.db
 desktop.ini
 
-# IDE / editors
+# IDE / editors / AI assistants — local, never published
 *.swp
 *.swo
 *~
 .idea/
 .vscode/
 .cursor/
+.claude/
+.aider*
+.continue/
+.windsurf/
 
 # Third-party SDKs — download separately, see README "Install the TDT SDK".
 # Not redistributed in this repo because they have their own license / authorship.

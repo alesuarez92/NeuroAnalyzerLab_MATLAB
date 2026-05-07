@@ -2,7 +2,7 @@
   📜  L I C E N S E  —  A L L   R I G H T S   R E S E R V E D
 ═══════════════════════════════════════════════════════════════════════════════
 
-  ©  Copyright  the author(s) and contributors of this repository.
+  ©  Copyright  Alejandro Suarez, Ph.D.
      All rights reserved.
 
 
