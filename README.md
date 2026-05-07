@@ -4,6 +4,8 @@
 [![License](https://img.shields.io/badge/license-All%20Rights%20Reserved-lightgrey.svg)](LICENSE.txt)
 [![MATLAB](https://img.shields.io/badge/MATLAB-R2021a+-orange.svg)](https://www.mathworks.com/products/matlab.html)
 
+![Main launcher window — three sections: Filtering & Signal Processing (LDF / Electrophysiology), Imaging & ROI analysis, Signal Characterization](docs/main-launcher.png)
+
 Neuroscience analysis toolbox (NMD Lab) for **Laser Doppler Flowmetry**,
 **electrophysiology** (LFP, MUA), **ROI / coregistered image analysis**
 (brightness, movement, ΔF/F, blood-flow speed, kymograph, vessel diameter),
