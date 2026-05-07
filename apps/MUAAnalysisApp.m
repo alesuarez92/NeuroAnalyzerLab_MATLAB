@@ -54,7 +54,8 @@ classdef MUAAnalysisApp < handle
             figBottom = max(10, round((ss(4) - figH) / 2));
             app.UIFig = figure('Name', 'MUA Analysis', ...
                 'Position', [figLeft figBottom figW figH], 'Resize', 'on', ...
-                'Color', T.bgGray);
+                'Color', T.bgGray, ...
+                'MenuBar', 'none', 'ToolBar', 'none', 'NumberTitle', 'off');
 
             % === HEADER: full-width (covers upper part completely) ===
             headerH = 0.065;
@@ -157,8 +158,8 @@ classdef MUAAnalysisApp < handle
             axMuaH = graphH - axStimH - axGap;
             muaBottom = graphBottom;
             stimBottom = muaBottom + axMuaH + axGap;
-            % Leave small top margin in each axis so title text is not clipped
-            titleMargin = 0.02;
+            % Leave a top margin in each axis so title text is not clipped
+            titleMargin = 0.04;
             app.AxStim = axes('Parent', app.UIFig, 'Units', 'normalized', ...
                 'Position', [0.07 stimBottom + titleMargin*0.5 0.86 axStimH - titleMargin]);
             title(app.AxStim, 'Stimulation Signal');
@@ -311,43 +312,42 @@ classdef MUAAnalysisApp < handle
         end
 
         function configureSpikeSorting(app)
-            d = dialog('Name', 'Spike Sorting Configuration', 'Position', [300 200 420 500]);
+            % Layout uses a 35-px row pitch from y=510 down to y=125, then the
+            % drift section (90, 55) and the run button at y=10. Dialog height
+            % grown to 540 to keep all rows separated cleanly.
+            d = dialog('Name', 'Spike Sorting Configuration', 'Position', [300 200 420 540]);
 
-            uicontrol(d, 'Style', 'text', 'Position', [20 450 200 20], 'String', 'Detection Method:');
+            uicontrol(d, 'Style', 'text', 'Position', [20 510 200 20], 'String', 'Detection Method:');
             detectMethodPopup = uicontrol(d, 'Style', 'popupmenu', ...
-                    'Position', [220 450 120 25], ...
+                    'Position', [220 510 120 25], ...
                     'String', {'Standard', 'MAD', 'NEO', 'Rolling MAD', 'Percentile'}, ...
                     'Value', 1);
 
             % Threshold multiplier
-            uicontrol(d, 'Style', 'text', 'Position', [20 420 200 20], 'String', 'Threshold Multiplier (e.g. 3.5):');
-            thresholdBox = uicontrol(d, 'Style', 'edit', 'Position', [230 420 100 25], 'String', '3.5');
+            uicontrol(d, 'Style', 'text', 'Position', [20 475 200 20], 'String', 'Threshold Multiplier (e.g. 3.5):');
+            thresholdBox = uicontrol(d, 'Style', 'edit', 'Position', [230 475 100 25], 'String', '3.5');
 
             % Refractory period
-            uicontrol(d, 'Style', 'text', 'Position', [20 390 200 20], 'String', 'Refractory Period (ms):');
-            refractoryBox = uicontrol(d, 'Style', 'edit', 'Position', [230 390 100 25], 'String', '1.0');
+            uicontrol(d, 'Style', 'text', 'Position', [20 440 200 20], 'String', 'Refractory Period (ms):');
+            refractoryBox = uicontrol(d, 'Style', 'edit', 'Position', [230 440 100 25], 'String', '1.0');
 
             % Alignment window
-            uicontrol(d, 'Style', 'text', 'Position', [20 360 200 20], 'String', 'Alignment Window (ms):');
-            alignBox = uicontrol(d, 'Style', 'edit', 'Position', [230 360 100 25], 'String', '1.5');
+            uicontrol(d, 'Style', 'text', 'Position', [20 405 200 20], 'String', 'Alignment Window (ms):');
+            alignBox = uicontrol(d, 'Style', 'edit', 'Position', [230 405 100 25], 'String', '1.5');
 
             % Polarity
-            uicontrol(d, 'Style', 'text', 'Position', [20 330 200 20], 'String', 'Polarity:');
-            polarityPopup = uicontrol(d, 'Style', 'popupmenu', 'Position', [230 330 100 25], ...
+            uicontrol(d, 'Style', 'text', 'Position', [20 370 200 20], 'String', 'Polarity:');
+            polarityPopup = uicontrol(d, 'Style', 'popupmenu', 'Position', [230 370 100 25], ...
                 'String', {'positive','negative', 'both'});
 
-            % Filter before detection
-            filterCheckbox = uicontrol(d, 'Style', 'checkbox', 'Position', [20 290 300 25], ...
+            % Filter before detection — checkbox and bandpass range share one row
+            filterCheckbox = uicontrol(d, 'Style', 'checkbox', 'Position', [20 335 150 25], ...
                 'String', 'Filter before detection?', 'Value', 0,...
                 'Callback', @(src,~)toggleFilter());
+            uicontrol(d, 'Style', 'text', 'Position', [180 337 130 20], 'String', 'Bandpass Range (Hz):');
+            bandpassLow = uicontrol(d, 'Style', 'edit', 'Position', [315 335 42 25], 'String', '300', 'Enable', 'off');
+            bandpassHigh = uicontrol(d, 'Style', 'edit', 'Position', [362 335 42 25], 'String', '3000', 'Enable', 'off');
 
-            % Bandpass range
-            uicontrol(d, 'Style', 'text', 'Position', [180 300 200 20], 'String', 'Bandpass Range (Hz):');
-            bandpassLow = uicontrol(d, 'Style', 'edit', 'Position', [230 280 45 25], 'String', '300', 'Enable', 'off');
-            bandpassHigh = uicontrol(d, 'Style', 'edit', 'Position', [285 280 45 25], 'String', '3000', 'Enable', 'off');
-
-
-            % Enable/disable logic
             function toggleFilter()
                 if filterCheckbox.Value
                     set([bandpassLow,bandpassHigh], 'Enable', 'on');
@@ -357,32 +357,31 @@ classdef MUAAnalysisApp < handle
             end
 
             % Feature extraction method
-            uicontrol(d, 'Style', 'text', 'Position', [20 240 200 20], 'String', 'Feature Extraction Method:');
-            featurePopup = uicontrol(d, 'Style', 'popupmenu', 'Position', [220 240 120 25], ...
+            uicontrol(d, 'Style', 'text', 'Position', [20 300 200 20], 'String', 'Feature Extraction Method:');
+            featurePopup = uicontrol(d, 'Style', 'popupmenu', 'Position', [220 300 120 25], ...
                 'String', {'PCA', 'ICA', 'Waveform', 'Wavelet', 't-SNE'});
 
             % Number of components
-            uicontrol(d, 'Style', 'text', 'Position', [20 210 200 20], 'String', '# of Components:');
-            compBox = uicontrol(d, 'Style', 'edit', 'Position', [230 210 100 25], 'String', '3');
+            uicontrol(d, 'Style', 'text', 'Position', [20 265 200 20], 'String', '# of Components:');
+            compBox = uicontrol(d, 'Style', 'edit', 'Position', [230 265 100 25], 'String', '3');
 
             % Normalize features (z-score) before clustering
-            normCheckbox = uicontrol(d, 'Style', 'checkbox', 'Position', [20 180 220 22], ...
+            normCheckbox = uicontrol(d, 'Style', 'checkbox', 'Position', [20 230 220 22], ...
                 'String', 'Normalize features?', 'Value', 1);
 
             % --- Clustering method dropdown ---
-            uicontrol(d, 'Style', 'text', 'Position', [20 170 200 20], 'String', 'Clustering Method:');
+            uicontrol(d, 'Style', 'text', 'Position', [20 195 200 20], 'String', 'Clustering Method:');
             clusterPopup = uicontrol(d, 'Style', 'popupmenu', ...
-                'Position', [230 170 100 25], ...
+                'Position', [230 195 100 25], ...
                 'String', {'K-means', 'GMM', 'DBSCAN'}, ...
-                'Callback', @(src,~) toggleEpsilonBox());  % assign callback AFTER definition
+                'Callback', @(src,~) toggleEpsilonBox());
 
             % --- DBSCAN epsilon input ---
-            uicontrol(d, 'Style', 'text', 'Position', [20 150 200 20], ...
+            uicontrol(d, 'Style', 'text', 'Position', [20 160 200 20], ...
                 'String', 'DBSCAN Epsilon (optional):', 'Tag', 'EpsLabel');
-            dbscanEpsBox = uicontrol(d, 'Style', 'edit', 'Position', [230 150 60 20], ...
+            dbscanEpsBox = uicontrol(d, 'Style', 'edit', 'Position', [230 160 60 22], ...
                 'String', '', 'Enable', 'off', 'Tag', 'EpsBox');
 
-            % --- Toggle epsilon field visibility ---
             function toggleEpsilonBox()
                 isDBSCAN = strcmp(clusterPopup.String{clusterPopup.Value}, 'DBSCAN');
                 set(findobj(d, 'Tag', 'EpsBox'), 'Enable', ternary(isDBSCAN, 'on', 'off'));
@@ -397,39 +396,32 @@ classdef MUAAnalysisApp < handle
             end
 
             % Minimum spikes per cluster
-            uicontrol(d, 'Style', 'text', 'Position', [20 120 200 20], 'String', 'Minimum Spikes per Cluster:');
-            minSpikesBox = uicontrol(d, 'Style', 'edit', 'Position', [230 120 100 25], 'String', '20');
+            uicontrol(d, 'Style', 'text', 'Position', [20 125 200 20], 'String', 'Minimum Spikes per Cluster:');
+            minSpikesBox = uicontrol(d, 'Style', 'edit', 'Position', [230 125 100 25], 'String', '20');
 
-            % Drift Correction Controls
-            driftCheck = uicontrol(d, 'Style', 'checkbox', 'Position', [20 80 100 20],...
+            % Drift correction
+            driftCheck = uicontrol(d, 'Style', 'checkbox', 'Position', [20 90 130 20],...
                 'String', 'Drift Correction?',...
                 'Value', 0, ...
                 'Callback', @(src,~) toggleDrift());
-
             driftMethodPopup = uicontrol(d, 'Style', 'popupmenu', ...
-                'Position', [210 75 140 25], ...
+                'Position', [200 88 150 25], ...
                 'String', {'Time Binning','Dynamic Clustering'}, ...
                 'Enable', 'off',...
                 'Callback', @(src,~) toggleDriftOptions());
 
-            uicontrol(d, 'Style', 'text', 'Position', [30 50 100 20], ...
+            uicontrol(d, 'Style', 'text', 'Position', [20 55 100 20], ...
                 'String', 'Bin Width (s):');
-
             driftBinBox = uicontrol(d, 'Style', 'edit', ...
-                'Position', [120 50 50 25], 'String', '30', ...
+                'Position', [125 55 50 25], 'String', '30', ...
                 'Enable', 'off');
-
-            % Drift Correction Controls
-            GridSearchCheck = uicontrol(d, 'Style', 'checkbox', 'Position', [200 50 180 20],...
+            GridSearchCheck = uicontrol(d, 'Style', 'checkbox', 'Position', [200 55 200 20],...
                 'String', 'Optimize thresh (Grid search)',...
                 'Value', 0);
 
-
-            % Enable/disable logic
             function toggleDrift()
                 if driftCheck.Value
                     set([driftMethodPopup,driftBinBox,GridSearchCheck], 'Enable', 'on');
-
                 else
                     set([driftMethodPopup,driftBinBox,GridSearchCheck], 'Enable', 'off');
                 end

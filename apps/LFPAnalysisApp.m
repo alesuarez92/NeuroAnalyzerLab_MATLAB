@@ -48,8 +48,9 @@ classdef LFPAnalysisApp < handle
         function buildUI(app)
             T = UITheme;
             app.UIFig = figure('Name', 'ERP Analysis App', ...
-                'Position', [300 300 1000 720], 'Resize', 'on', ...
-                'Color', T.bgGray);
+                'Position', [300 300 1100 760], 'Resize', 'on', ...
+                'Color', T.bgGray, ...
+                'MenuBar', 'none', 'ToolBar', 'none', 'NumberTitle', 'off');
 
             % --- Header: full-width bar (covers upper part completely) ---
             headerH = 0.08;
@@ -195,16 +196,20 @@ classdef LFPAnalysisApp < handle
             erpStd = std(erpMat, 0, 3, 'omitnan');
             t = linspace(-preS, postS, totalSamples);
         
-            % Display number of epochs averaged
-            annotation(app.UIFig, 'textbox', [0.01 0.66 0.3 0.03], 'String', sprintf('Averaged %d epochs', size(erpMat, 3)), ...
-                      'EdgeColor','none', 'FontWeight','bold');
+            % Replace previous epoch-count annotation (avoid stacking on re-run)
+            delete(findall(app.UIFig, 'Tag', 'epochCount'));
+            annotation(app.UIFig, 'textbox', [0.01 0.66 0.3 0.03], ...
+                'String', sprintf('Averaged %d epochs', size(erpMat, 3)), ...
+                'Tag', 'epochCount', 'EdgeColor','none', 'FontWeight','bold');
 
-            % Clear previous plots
+            % Clear previous plots (axes and tiled layouts inside the panel)
             delete(findall(app.AxContainer, 'Type', 'tiledlayout'));
+            delete(findall(app.AxContainer, 'Type', 'axes'));
 
-            % Create combined ERP plot (all channels in one plot)
+            % Create combined ERP plot (all channels in one plot); leave room
+            % above the axes for its title and below for x labels.
             if length(chIdx) > 1
-                axAll = axes('Parent', app.AxContainer, 'Position', [0.05 0.1 0.9 0.8]);
+                axAll = axes('Parent', app.AxContainer, 'Position', [0.07 0.14 0.88 0.70]);
                 hold(axAll, 'on');
                 colors = lines(length(chIdx));
                 for i = 1:length(chIdx)

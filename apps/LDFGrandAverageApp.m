@@ -36,8 +36,9 @@ classdef LDFGrandAverageApp < handle
         function buildUI(app)
             T = UITheme;
             app.UIFig = figure('Name', 'Average LDF Viewer', ...
-                'Position', [400 300 820 540], 'Resize', 'on', ...
-                'Color', T.bgGray);
+                'Position', [400 300 1000 640], 'Resize', 'on', ...
+                'Color', T.bgGray, ...
+                'MenuBar', 'none', 'ToolBar', 'none', 'NumberTitle', 'off');
 
             % --- Header: full-width ---
             headerH = 0.09;
@@ -83,10 +84,11 @@ classdef LDFGrandAverageApp < handle
                 'Units', 'normalized', 'Position', [0.84 0.25 0.08 0.5], ...
                 'Value', 0, 'Callback', @(src,~)app.updateSegmentPlot());
 
-            % --- Axes (above footer, below controls); margin so title not clipped ---
+            % --- Axes (above footer, below controls); top margin so title not clipped ---
             graphBottom = footerH + 0.02;
+            graphTop = ctrlTop - ctrlH - 0.04;
             app.Ax = axes(app.UIFig, 'Units', 'normalized', ...
-                'Position', [0.08 graphBottom 0.84 ctrlTop - ctrlH - 0.01 - graphBottom - 0.02]);
+                'Position', [0.08 graphBottom 0.84 graphTop - graphBottom]);
         end
 
         function loadFiles(app)

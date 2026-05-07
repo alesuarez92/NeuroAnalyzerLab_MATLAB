@@ -39,7 +39,9 @@ classdef UITheme
         headerPaddingV = 14
         % Footer (copyright bar) – fixed height so content never overlaps
         footerHeight = 28
-        % Padding inside graph/axes panels so titles and labels are not clipped
-        axesPanelPadding = [12 40 12 12]  % [L B R T]: extra top for axis title
+        % Padding inside graph/axes panels so titles and labels are not clipped.
+        % Order is [L B R T] (matches uigridlayout 'Padding'). Generous on all
+        % sides: left for ylabel + tick labels, bottom for xlabel, top for title.
+        axesPanelPadding = [40 35 12 35]
     end
 end

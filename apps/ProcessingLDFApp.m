@@ -44,8 +44,9 @@ classdef ProcessingLDFApp < handle
         function buildUI(app)
             T = UITheme;
             app.UIFig = figure('Name', 'LDF Processing Window', ...
-                'Position', [200 200 1000 620], 'Resize', 'on', ...
-                'Color', T.bgGray);
+                'Position', [200 200 1200 680], 'Resize', 'on', ...
+                'Color', T.bgGray, ...
+                'MenuBar', 'none', 'ToolBar', 'none', 'NumberTitle', 'off');
 
             % --- Header: full-width ---
             headerH = 0.08;
@@ -79,7 +80,7 @@ classdef ProcessingLDFApp < handle
             app.LoadBtn = uicontrol(ctrlPanel, 'Style','pushbutton', 'String','Load File', ...
                 'Units', 'normalized', 'Position', [0.01 0.15 0.08 0.7], 'Callback', @(~,~)app.loadData());
             uicontrol(ctrlPanel, 'Style','pushbutton','String','Set Processing', ...
-                'Units', 'normalized', 'Position', [0.10 0.15 0.08 0.7], ...
+                'Units', 'normalized', 'Position', [0.10 0.15 0.10 0.7], ...
                 'Callback', @(~,~)openFilterSettings());
             function openFilterSettings()
                 if isempty(app.Fs) || app.Fs <= 0
@@ -89,7 +90,7 @@ classdef ProcessingLDFApp < handle
                 LDFProcessingParamsApp(@(params)app.receiveProcessingParams(params), app.Fs);
             end
             uicontrol(ctrlPanel, 'Style','pushbutton','String','Segment by Onsets', ...
-                'Units', 'normalized', 'Position', [0.19 0.15 0.08 0.7], ...
+                'Units', 'normalized', 'Position', [0.21 0.15 0.12 0.7], ...
                 'Callback', @(~,~)openSegmentBySettings());
             function openSegmentBySettings()
                 if isempty(app.Fs) || app.Fs <= 0
@@ -99,7 +100,7 @@ classdef ProcessingLDFApp < handle
                 app.segmentByOnsetsConfig();
             end
             uicontrol(ctrlPanel, 'Style','pushbutton','String','Plot Average LDF', ...
-                'Units', 'normalized', 'Position', [0.28 0.15 0.08 0.7], ...
+                'Units', 'normalized', 'Position', [0.34 0.15 0.11 0.7], ...
                 'Callback', @(~,~)openPlotAverageSegment());
             function openPlotAverageSegment()
                 if isempty(app.Fs) || app.Fs <= 0
@@ -109,7 +110,7 @@ classdef ProcessingLDFApp < handle
                 app.plotAverageSegment();
             end
             app.SaveBtn = uicontrol(ctrlPanel, 'Style','pushbutton', 'String','Save Result', ...
-                'Units', 'normalized', 'Position', [0.37 0.15 0.08 0.7], 'Callback', @(~,~)opensaveData());
+                'Units', 'normalized', 'Position', [0.46 0.15 0.09 0.7], 'Callback', @(~,~)opensaveData());
             function opensaveData()
                 if isempty(app.Fs) || app.Fs <= 0
                     errordlg('Please load a dataset first.', 'Missing Sampling Rate');
@@ -118,20 +119,22 @@ classdef ProcessingLDFApp < handle
                 app.saveData();
             end
             uicontrol(ctrlPanel, 'Style','text', 'String','Sampling Rate (Hz):', ...
-                'Units', 'normalized', 'Position', [0.50 0.15 0.12 0.5], 'HorizontalAlignment','left');
+                'Units', 'normalized', 'Position', [0.57 0.15 0.13 0.5], 'HorizontalAlignment','left');
             app.FsLabel = uicontrol(ctrlPanel, 'Style','text', 'String','---', ...
-                'Units', 'normalized', 'Position', [0.62 0.15 0.08 0.5], ...
+                'Units', 'normalized', 'Position', [0.71 0.15 0.10 0.5], ...
                 'BackgroundColor','white', 'HorizontalAlignment','left');
 
-            % --- Axes (above footer, below controls); margin so titles not clipped ---
+            % --- Axes (above footer, below controls); top margin per axis so titles not clipped ---
             graphBottom = footerH + 0.02;
-            graphTop = ctrlTop - ctrlH - 0.01;
-            axH = (graphTop - graphBottom) / 2;
-            gap = 0.02;
+            graphTop = ctrlTop - ctrlH - 0.04;
+            graphH = graphTop - graphBottom;
+            gap = 0.03;
+            titleMargin = 0.04;
+            axH = (graphH - gap - 2*titleMargin) / 2;
             app.AxStim = axes(app.UIFig, 'Units', 'normalized', ...
-                'Position', [0.08 graphBottom + axH + gap 0.84 axH - 0.02]);
+                'Position', [0.08, graphBottom + axH + titleMargin + gap, 0.84, axH]);
             app.AxLDF  = axes(app.UIFig, 'Units', 'normalized', ...
-                'Position', [0.08 graphBottom 0.84 axH - 0.02]);
+                'Position', [0.08, graphBottom, 0.84, axH]);
         end
 
         function loadData(app)
