@@ -4,6 +4,13 @@
 [![License](https://img.shields.io/badge/license-All%20Rights%20Reserved-lightgrey.svg)](LICENSE.txt)
 [![MATLAB](https://img.shields.io/badge/MATLAB-R2021a+-orange.svg)](https://www.mathworks.com/products/matlab.html)
 
+> **Install via [Releases](https://github.com/alesuarez92/NeuronalDataAnalyzerLab/releases/latest)**,
+> not the green *Code → Download ZIP* button at the top of this page.
+> The green button gives you the in-development `main` branch; the
+> Releases page gives you a tagged, tested version (currently
+> [v0.1.0](https://github.com/alesuarez92/NeuronalDataAnalyzerLab/releases/tag/v0.1.0)).
+> Full walk-through below in [Install](#install).
+
 ![Main launcher window — three sections: Filtering & Signal Processing (LDF / Electrophysiology), Imaging & ROI analysis, Signal Characterization](docs/main-launcher.png)
 
 Neuroscience analysis toolbox (NMD Lab) for **Laser Doppler Flowmetry**,
