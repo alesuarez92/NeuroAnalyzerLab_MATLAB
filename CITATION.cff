@@ -1,5 +1,5 @@
 cff-version: 1.2.0
-title: NeuroAnalyzerLab_MATLAB
+title: NeuronalDataAnalyzerLab
 message: >-
   If you use this software in research, please cite it using the metadata
   below.
@@ -8,8 +8,8 @@ authors:
   - given-names: Alejandro
     family-names: Suarez
     email: alesr713@gmail.com
-repository-code: "https://github.com/alesuarez92/NeuroAnalyzerLab_MATLAB"
-url: "https://github.com/alesuarez92/NeuroAnalyzerLab_MATLAB"
+repository-code: "https://github.com/alesuarez92/NeuronalDataAnalyzerLab"
+url: "https://github.com/alesuarez92/NeuronalDataAnalyzerLab"
 abstract: >-
   Neuroscience analysis toolbox for Laser Doppler Flowmetry, electrophysiology
   (LFP, MUA), ROI / coregistered image analysis (brightness, movement, ΔF/F,
@@ -25,6 +25,6 @@ keywords:
   - mua
   - signal-processing
   - matlab
-license-url: "https://github.com/alesuarez92/NeuroAnalyzerLab_MATLAB/blob/main/LICENSE.txt"
+license-url: "https://github.com/alesuarez92/NeuronalDataAnalyzerLab/blob/main/LICENSE.txt"
 version: "0.1.0"
 date-released: "2026-05-07"

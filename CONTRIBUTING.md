@@ -1,4 +1,4 @@
-# Contributing to NeuroAnalyzerLab_MATLAB
+# Contributing to NeuronalDataAnalyzerLab
 
 Thanks for your interest. This is an early-stage research toolbox
 (currently v0.1.0) and contributions that flow back to the canonical
@@ -14,7 +14,7 @@ file an issue or open a PR back here.
 
 ## Reporting bugs
 
-Open an [issue](https://github.com/alesuarez92/NeuroAnalyzerLab_MATLAB/issues)
+Open an [issue](https://github.com/alesuarez92/NeuronalDataAnalyzerLab/issues)
 with:
 
 - The version (shown in every app's footer next to the copyright, or check
@@ -67,5 +67,5 @@ Releases are git tags (`v0.1.0`, ...) with a corresponding entry in
 ## Questions
 
 For anything that's not a bug or a concrete proposal, open a
-[discussion](https://github.com/alesuarez92/NeuroAnalyzerLab_MATLAB/discussions)
+[discussion](https://github.com/alesuarez92/NeuronalDataAnalyzerLab/discussions)
 or email the author (see the GitHub profile linked in the README).

@@ -1,4 +1,4 @@
-# NeuroAnalyzerLab_MATLAB
+# NeuronalDataAnalyzerLab
 
 [![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](CHANGELOG.md)
 [![License](https://img.shields.io/badge/license-All%20Rights%20Reserved-lightgrey.svg)](LICENSE.txt)
@@ -31,13 +31,13 @@ a "Cite this repository" button from [CITATION.cff](CITATION.cff).
 ## Install
 
 1. **Download the release ZIP** from
-   [Releases](https://github.com/alesuarez92/NeuroAnalyzerLab_MATLAB/releases)
+   [Releases](https://github.com/alesuarez92/NeuronalDataAnalyzerLab/releases)
    (pick the latest, click *Source code (zip)*).
 2. **Unzip** it somewhere stable, e.g.
-   `~/Documents/MATLAB/NeuroAnalyzerLab_MATLAB`.
+   `~/Documents/MATLAB/NeuronalDataAnalyzerLab`.
 3. **Add to path** (one time): in MATLAB,
    ```matlab
-   addpath(genpath('~/Documents/MATLAB/NeuroAnalyzerLab_MATLAB'));
+   addpath(genpath('~/Documents/MATLAB/NeuronalDataAnalyzerLab'));
    savepath;   % optional: persist for future sessions
    ```
 4. **Launch** from the Command Window:
@@ -50,7 +50,7 @@ contents (path stays the same), and re-launch. A `.mltbx` toolbox installer
 is planned for a later release so this becomes one click.
 
 If you'd rather track development directly:
-`git clone https://github.com/alesuarez92/NeuroAnalyzerLab_MATLAB.git`
+`git clone https://github.com/alesuarez92/NeuronalDataAnalyzerLab.git`
 into the same location. Just don't push your changes to a fork — open
 issues / PRs back to this repo instead. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
