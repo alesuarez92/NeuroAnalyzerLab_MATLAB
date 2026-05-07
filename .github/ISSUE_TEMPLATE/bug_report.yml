@@ -1,0 +1,104 @@
+name: Bug report
+description: Something is broken or behaving unexpectedly in one of the apps.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug. The more concrete the report,
+        the faster it gets fixed.
+
+  - type: input
+    id: version
+    attributes:
+      label: NeuronalDataAnalyzerLab version
+      description: >-
+        Shown in the footer of every app next to the copyright, or run
+        `UITheme.version` in MATLAB.
+      placeholder: "0.1.0"
+    validations:
+      required: true
+
+  - type: input
+    id: matlab
+    attributes:
+      label: MATLAB version
+      description: Output of `ver` (just the release line is fine).
+      placeholder: "R2023a"
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      placeholder: "macOS 14.5 / Windows 11 / Ubuntu 22.04"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: app
+    attributes:
+      label: Which app
+      multiple: false
+      options:
+        - Main launcher
+        - Extract LDF Data
+        - Process LDF Data
+        - Average LDF Viewer
+        - Extract Ephys Data
+        - Process LFP Data
+        - Process MUA Data
+        - ROI / Coregistered Image Analysis
+        - Signal Characterization
+        - Help
+        - Other / multiple
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: What you did, in order. A minimal recipe is best.
+      placeholder: |
+        1. Launch `NeuroAnalyzer`.
+        2. Click *Extract LDF Data*.
+        3. Load `myfile.mat`.
+        4. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: What actually happened
+      description: Include any error text from the MATLAB Command Window verbatim.
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: data
+    attributes:
+      label: Data shape (optional)
+      description: >-
+        Sampling rate, channel count, segment length, file format — anything
+        that helps reproduce the issue without sharing the data itself.
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Confirm
+      options:
+        - label: I have searched the existing issues for duplicates.
+          required: true
+        - label: I am running the latest released version, or I confirmed the bug exists on `main`.
+          required: true

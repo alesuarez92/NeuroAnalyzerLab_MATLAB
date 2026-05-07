@@ -24,6 +24,21 @@ desktop.ini
 # Not redistributed in this repo because they have their own license / authorship.
 Utilities/TDTMatlabSDK/
 
+# Local tooling — Python helpers, shell scripts, generators, and their
+# byproducts. Not part of the published toolbox; the toolbox is MATLAB
+# (.m). Generated *output* (e.g. docs/social-preview.png) is what ships;
+# the generators that produce it stay local.
+*.py
+*.sh
+__pycache__/
+*.pyc
+*.pyo
+
+# Local environment / personal scratch
+.env
+*.local
+*.local.*
+
 # Optional: uncomment if you don't want to track large data or local config
 # *.nex
 # data/
