@@ -20,6 +20,10 @@ desktop.ini
 .vscode/
 .cursor/
 
+# Third-party SDKs — download separately, see README "Install the TDT SDK".
+# Not redistributed in this repo because they have their own license / authorship.
+Utilities/TDTMatlabSDK/
+
 # Optional: uncomment if you don't want to track large data or local config
 # *.nex
 # data/

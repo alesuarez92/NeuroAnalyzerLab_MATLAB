@@ -69,7 +69,39 @@ issues / PRs back to this repo instead. See [CONTRIBUTING.md](CONTRIBUTING.md).
 ## Requirements
 
 - MATLAB **R2021a or later** (uses `uifigure`, `uigridlayout`, `uihyperlink`).
-- For TDT data: TDT MATLAB SDK under `Utilities/` (linked or copied).
+- For TDT data: the **TDT MATLAB SDK** under `Utilities/TDTMatlabSDK/`.
+  See [Install the TDT SDK](#install-the-tdt-sdk) below.
+
+## Install the TDT SDK
+
+The Tucker-Davis Technologies MATLAB SDK is a separate, third-party
+toolbox required only for loading TDT tank data (`Extract Ephys Data`).
+It has its own license and is not redistributed in this repo.
+
+1. Download the SDK from TDT:
+   [tdt.com/support/matlab-sdk](https://www.tdt.com/support/matlab-sdk/).
+2. Unzip the archive.
+3. Place the resulting `TDTMatlabSDK/` folder under `Utilities/` so the
+   layout is:
+
+   ```text
+   NeuronalDataAnalyzerLab/
+   └── Utilities/
+       └── TDTMatlabSDK/
+           ├── TDTSDK/
+           ├── Examples/
+           └── ...
+   ```
+
+4. Re-launch MATLAB (the SDK is added to the path automatically by
+   `ExtractEphysApp` when needed).
+
+`Utilities/TDTMatlabSDK/` is `.gitignore`d, so this folder lives on your
+machine only — no need to remove it before pulling updates.
+
+If you don't process TDT data, you can skip this step entirely; the rest
+of the toolbox (LDF, ROI imaging, signal characterization) works without
+the SDK.
 
 ## Development
 
